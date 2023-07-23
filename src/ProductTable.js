@@ -14,6 +14,9 @@ const ProductTable = () => {
     direction: "asc",
   });
 
+  const totalProducts = products.length;
+
+
   useEffect(() => {
     firebase.initializeApp(firebaseConfig);
 
@@ -70,6 +73,8 @@ const ProductTable = () => {
 
   return (
     <div className="product-table-container">
+      <div className="total-products">Total Products: {totalProducts}</div>
+
       <table className="product-table">
         <thead>
           <tr>

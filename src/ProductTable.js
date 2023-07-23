@@ -21,22 +21,20 @@ const ProductTable = () => {
       const data = snapshot.val();
       if (data) {
         const productList = Object.values(data);
-        setProducts(productList);
+
+        // Sort the products based on the current sortOrder
+        const sortedProducts = [...productList].sort((a, b) => {
+          const column = sortOrder.column;
+          const direction = sortOrder.direction === "asc" ? 1 : -1;
+          return a[column] < b[column] ? -direction : a[column] > b[column] ? direction : 0;
+        });
+
+        setProducts(sortedProducts);
       }
     });
 
     return () => productsRef.off("value");
-  }, []);
-
-  useEffect(() => {
-    const sortedProducts = [...products].sort((a, b) => {
-      const column = sortOrder.column;
-      const direction = sortOrder.direction === "asc" ? 1 : -1;
-      return a[column] < b[column] ? -direction : a[column] > b[column] ? direction : 0;
-    });
-
-    setProducts(sortedProducts);
-  }, [products, sortOrder]);
+  }, [sortOrder]);
 
   const handleSort = (column) => {
     setSortOrder((prevSortOrder) => ({

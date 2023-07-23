@@ -7,6 +7,8 @@ import "./ProductTable.css"; // Import custom CSS for styling
 
 const ProductTable = () => {
   const [products, setProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 20;
   const [sortOrder, setSortOrder] = useState({
     column: "Price",
     direction: "asc",
@@ -43,10 +45,27 @@ const ProductTable = () => {
     }));
   };
 
+  const handleDeleteProduct = (asin) => {
+    const productsRef = firebase.database().ref("products");
+
+    // Remove the product with the given ASIN from Firebase
+    productsRef.child(asin).remove();
+  };
+
   // Function to format the timestamp into "last updated" string
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp * 1000);
     return `Last Updated: ${date.toLocaleString()}`;
+  };
+
+  // Get current products based on the current page
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  // Change page
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
   return (
@@ -60,10 +79,11 @@ const ProductTable = () => {
             <th onClick={() => handleSort("VideoCount")}>Video Count</th>
             <th onClick={() => handleSort("timestamp")}>Last Updated</th>
             <th>Link</th>
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
+          {currentProducts.map((product) => (
             <tr key={product.ASIN}>
               <td>{product.Title}</td>
               <td>{product.Price}</td>
@@ -75,10 +95,28 @@ const ProductTable = () => {
                   View on Amazon
                 </a>
               </td>
+              <td>
+                <button onClick={() => handleDeleteProduct(product.ASIN)}>Delete</button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {/* Pagination Controls */}
+      <div className="pagination">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={indexOfLastProduct >= products.length}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };

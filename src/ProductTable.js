@@ -1,4 +1,3 @@
-// src/ProductTable.js
 import React, { useEffect, useState } from "react";
 import firebase from "firebase/compat/app";
 import "firebase/compat/database";
@@ -15,6 +14,7 @@ const ProductTable = () => {
   });
   const [hideNullLinks, setHideNullLinks] = useState(false);
   const [hideMessaged, setHideMessaged] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const totalProducts = products.length;
 
@@ -48,12 +48,21 @@ const ProductTable = () => {
           );
         }
 
+        // Apply search filter
+        if (searchTerm.trim() !== "") {
+          filteredProducts = filteredProducts.filter((product) =>
+            Object.values(product).some((value) =>
+              value !== null && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+            )
+          );
+        }
+
         setProducts(filteredProducts);
       }
     });
 
     return () => productsRef.off("value");
-  }, [sortOrder, hideNullLinks, hideMessaged]);
+  }, [sortOrder, hideNullLinks, hideMessaged, searchTerm]);
 
   const handleSort = (column) => {
     setSortOrder((prevSortOrder) => ({
@@ -96,6 +105,10 @@ const ProductTable = () => {
     alert("Template copied to clipboard!");
   };
 
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
   return (
     <div className="product-table-center-container">
       <div className="product-table-container">
@@ -117,6 +130,15 @@ const ProductTable = () => {
             onChange={() => setHideMessaged((prev) => !prev)}
           />
           <label>Hide Messaged Records</label>
+        </div>
+
+        <div>
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
         </div>
 
         <table className="product-table">
